@@ -1,6 +1,18 @@
 -- Rusinga Clubs schema. Run this once in Supabase SQL editor.
 create extension if not exists "pgcrypto";
 
+create or replace function public.current_school_year()
+returns text
+language sql
+stable
+as $$
+  select case
+    when extract(month from current_date) >= 8
+      then extract(year from current_date)::int || '/' || (extract(year from current_date)::int + 1)
+    else (extract(year from current_date)::int - 1) || '/' || extract(year from current_date)::int
+  end;
+$$;
+
 create table if not exists public.clubs (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -24,7 +36,7 @@ create table if not exists public.registrations (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references public.students(id) on delete cascade,
   club_id uuid not null references public.clubs(id) on delete cascade,
-  school_year text not null default '2026/2027',
+  school_year text not null default public.current_school_year(),
   date_registered timestamptz not null default now(),
   unique(student_id, club_id, school_year)
 );
@@ -44,7 +56,7 @@ create table if not exists public.club_change_requests (
   current_club_id uuid references public.clubs(id) on delete set null,
   requested_club_id uuid not null references public.clubs(id) on delete cascade,
   reason text not null,
-  school_year text not null default '2026/2027',
+  school_year text not null default public.current_school_year(),
   status text not null default 'pending' check (status in ('pending', 'approved', 'declined')),
   requested_at timestamptz not null default now(),
   reviewed_at timestamptz,

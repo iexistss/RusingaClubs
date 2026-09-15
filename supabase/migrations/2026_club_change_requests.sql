@@ -1,4 +1,15 @@
 -- Run this migration if the original schema was already applied.
+create or replace function public.current_school_year()
+returns text
+language sql
+stable
+as $$
+  select case
+    when extract(month from current_date) >= 8
+      then extract(year from current_date)::int || '/' || (extract(year from current_date)::int + 1)
+    else (extract(year from current_date)::int - 1) || '/' || extract(year from current_date)::int
+  end;
+$$;
 create table if not exists public.club_change_requests (
   id uuid primary key default gen_random_uuid(),
   student_name text not null,
@@ -7,7 +18,7 @@ create table if not exists public.club_change_requests (
   current_club_id uuid references public.clubs(id) on delete set null,
   requested_club_id uuid not null references public.clubs(id) on delete cascade,
   reason text not null,
-  school_year text not null default '2026/2027',
+  school_year text not null default public.current_school_year(),
   status text not null default 'pending' check (status in ('pending', 'approved', 'declined')),
   requested_at timestamptz not null default now(),
   reviewed_at timestamptz,

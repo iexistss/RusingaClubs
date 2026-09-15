@@ -65,7 +65,7 @@ on conflict (id) do update set role = 'prefect', full_name = 'Clubs Prefect';
 
 After signing in at `/login`, open `/admin/manage` to add or remove clubs and update leader names and contacts. Leaders can use the dashboard and attendance pages but cannot use the management controls.
 
-The active school year is `2026/2027`, running September through June. Students can register for up to two clubs per school year. The public `/request-change` page records requests for a leader or Prefect to review; authenticated staff can review them at `/admin/requests`.
+The school year rolls over automatically every August (`2027/2028` from August 2027), while clubs run from September through June. Students can register for up to two clubs per school year. The public `/request-change` page records requests for a leader or Prefect to review; authenticated staff can review them at `/admin/requests`.
 
 ## Password recovery
 

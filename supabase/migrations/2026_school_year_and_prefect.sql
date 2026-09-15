@@ -1,7 +1,19 @@
 -- Run this migration if the original schema was already applied.
+create or replace function public.current_school_year()
+returns text
+language sql
+stable
+as $$
+  select case
+    when extract(month from current_date) >= 8
+      then extract(year from current_date)::int || '/' || (extract(year from current_date)::int + 1)
+    else (extract(year from current_date)::int - 1) || '/' || extract(year from current_date)::int
+  end;
+$$;
 alter table public.clubs add column if not exists audience text not null default 'All years';
 alter table public.clubs add column if not exists subscription_required boolean not null default false;
-alter table public.registrations add column if not exists school_year text not null default '2026/2027';
+alter table public.registrations add column if not exists school_year text not null default public.current_school_year();
+alter table public.registrations alter column school_year set default public.current_school_year();
 alter table public.registrations drop constraint if exists registrations_student_id_club_id_key;
 alter table public.registrations drop constraint if exists registrations_student_id_school_year_key;
 drop index if exists registrations_one_club_per_school_year_idx;
