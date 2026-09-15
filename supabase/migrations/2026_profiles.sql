@@ -7,6 +7,8 @@ create table if not exists public.profiles (
   role text not null default 'leader' check (role in ('leader', 'prefect')),
   created_at timestamptz not null default now()
 );
+alter table public.profiles add column if not exists username text;
+alter table public.profiles add column if not exists login_email text;
 
 alter table public.profiles enable row level security;
 drop policy if exists "Users can view their own profile" on public.profiles;
@@ -30,8 +32,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
-alter table public.profiles add column if not exists username text;
-alter table public.profiles add column if not exists login_email text;
 update public.profiles as profiles
 set login_email = users.email
 from auth.users as users

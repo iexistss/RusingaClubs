@@ -58,6 +58,12 @@ create table if not exists public.profiles (
   role text not null default 'leader' check (role in ('leader', 'prefect')),
   created_at timestamptz not null default now()
 );
+create table if not exists public.club_leaders (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  club_id uuid not null references public.clubs(id) on delete cascade,
+  assigned_at timestamptz not null default now(),
+  primary key (user_id, club_id)
+);
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -72,6 +78,24 @@ end;
 $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
+
+create or replace function public.is_prefect()
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select exists (select 1 from public.profiles where id = auth.uid() and role = 'prefect');
+$$;
+
+create or replace function public.can_manage_club(target_club_id uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select public.is_prefect() or exists (select 1 from public.club_leaders where user_id = auth.uid() and club_id = target_club_id);
+$$;
 
 create or replace function public.resolve_login_email(login_username text)
 returns text
@@ -106,18 +130,21 @@ alter table public.registrations enable row level security;
 alter table public.attendance enable row level security;
 alter table public.club_change_requests enable row level security;
 alter table public.profiles enable row level security;
+alter table public.club_leaders enable row level security;
 
 create policy "Anyone can view clubs" on public.clubs for select using (true);
 create policy "Anyone can register as a student" on public.students for insert with check (true);
 create policy "Anyone can join a club" on public.registrations for insert with check (true);
-create policy "Signed-in leaders can view students" on public.students for select to authenticated using (true);
-create policy "Signed-in leaders can view registrations" on public.registrations for select to authenticated using (true);
-create policy "Signed-in leaders can manage attendance" on public.attendance for all to authenticated using (true) with check (true);
+create policy "Signed-in leaders can view students" on public.students for select to authenticated using (public.is_prefect() or exists (select 1 from public.registrations r join public.club_leaders cl on cl.club_id = r.club_id where r.student_id = students.id and cl.user_id = auth.uid()));
+create policy "Signed-in leaders can view registrations" on public.registrations for select to authenticated using (public.is_prefect() or exists (select 1 from public.club_leaders cl where cl.club_id = registrations.club_id and cl.user_id = auth.uid()));
+create policy "Signed-in leaders can manage attendance" on public.attendance for all to authenticated using (public.can_manage_club(attendance.club_id)) with check (public.can_manage_club(attendance.club_id));
 create policy "Anyone can submit a club change request" on public.club_change_requests for insert with check (true);
 create policy "Signed-in leaders can view change requests" on public.club_change_requests for select to authenticated using (true);
 create policy "Signed-in leaders can review change requests" on public.club_change_requests for update to authenticated using (true) with check (true);
 create policy "Users can view their own profile" on public.profiles for select to authenticated using (auth.uid() = id);
 create policy "Prefect can manage clubs" on public.clubs for all to authenticated using (exists (select 1 from public.profiles where id = auth.uid() and role = 'prefect')) with check (exists (select 1 from public.profiles where id = auth.uid() and role = 'prefect'));
+create policy "Leaders can view their assignments" on public.club_leaders for select to authenticated using (user_id = auth.uid() or public.is_prefect());
+create policy "Prefect can manage assignments" on public.club_leaders for all to authenticated using (public.is_prefect()) with check (public.is_prefect());
 
 insert into public.clubs (name, description, audience, meeting_day, meeting_time, leader_name, subscription_required)
 select * from (values

@@ -18,10 +18,13 @@ export default function ReportsPage() {
     if (!supabase) { setLoading(false); return; }
     const client = supabase;
     async function loadReport() {
-      const [{ data: clubData }, { data: registrations }, { data: attendance }] = await Promise.all([
-        client.from("clubs").select("id,name,audience").order("name"),
-        client.from("registrations").select("club_id,student_id").eq("school_year", SCHOOL_YEAR),
-        client.from("attendance").select("club_id,student_id,present").eq("session_date", weekDate)
+      const { data: { user } } = await client.auth.getUser(); if (!user) { window.location.href = "/login"; return; }
+      const { data: profile } = await client.from("profiles").select("role").eq("id", user.id).single(); let allowedIds: string[] | null = null;
+      if (profile?.role !== "prefect") { const { data: assignments } = await client.from("club_leaders").select("club_id").eq("user_id", user.id); allowedIds = (assignments || []).map((assignment) => assignment.club_id); }
+      let clubsQuery = client.from("clubs").select("id,name,audience").order("name"); if (allowedIds) clubsQuery = clubsQuery.in("id", allowedIds); const { data: clubData } = await clubsQuery; const clubIds = (clubData || []).map((club) => club.id);
+      const [{ data: registrations }, { data: attendance }] = await Promise.all([
+        client.from("registrations").select("club_id,student_id").eq("school_year", SCHOOL_YEAR).in("club_id", clubIds),
+        client.from("attendance").select("club_id,student_id,present").eq("session_date", weekDate).in("club_id", clubIds)
       ]);
       if (clubData?.length) setRows(clubData.map((club) => ({ id: club.id, name: club.name, audience: club.audience || "All years", registered: registrations?.filter((item) => item.club_id === club.id).length || 0, present: attendance?.filter((item) => item.club_id === club.id && item.present).length || 0 })));
       setLoading(false);

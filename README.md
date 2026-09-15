@@ -17,6 +17,7 @@ Without environment variables, the app runs with sample clubs and local demo int
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-service-role-key
 ```
 
 Run `supabase/schema.sql` in the Supabase SQL editor. If you already ran the earlier version of the schema, run these migrations as well:
@@ -24,6 +25,7 @@ Run `supabase/schema.sql` in the Supabase SQL editor. If you already ran the ear
 ```text
 supabase/migrations/2026_profiles.sql
 supabase/migrations/2026_usernames.sql
+supabase/migrations/2026_club_leaders.sql
 supabase/migrations/2026_school_year_and_prefect.sql
 supabase/migrations/2026_club_change_requests.sql
 ```
@@ -42,6 +44,8 @@ where id = 'YOUR_AUTH_USER_UUID';
 ```
 
 The password remains managed by Supabase Auth and is never stored in this project. The login screen accepts either `clubsprefect` or the account email.
+
+The Prefect account page at `/admin/users` creates teacher accounts through a server-only Supabase Admin API. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel as a private variable (never `NEXT_PUBLIC_`) before using it. Teachers are assigned to clubs there and only see those clubs after signing in.
 
 ## Logo
 
@@ -79,7 +83,8 @@ For local testing also add `http://localhost:3000/**`. If reset emails do not ar
 
 1. Push this folder to a GitHub repository and import it into Vercel.
 2. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` under Vercel Project Settings > Environment Variables.
-3. Deploy. Every future push to the selected branch will deploy automatically.
+3. Add `SUPABASE_SERVICE_ROLE_KEY` as a private server-only variable if the Prefect will create teacher accounts from `/admin/users`.
+4. Deploy. Every future push to the selected branch will deploy automatically.
 
 For a custom domain, open Vercel Project Settings > Domains, add the school domain, then create the DNS record Vercel shows at your domain provider. Vercel will issue HTTPS automatically after DNS verification.
 
