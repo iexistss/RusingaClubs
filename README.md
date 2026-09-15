@@ -23,11 +23,25 @@ Run `supabase/schema.sql` in the Supabase SQL editor. If you already ran the ear
 
 ```text
 supabase/migrations/2026_profiles.sql
+supabase/migrations/2026_usernames.sql
 supabase/migrations/2026_school_year_and_prefect.sql
 supabase/migrations/2026_club_change_requests.sql
 ```
 
 `2026_profiles.sql` creates `public.profiles` and automatically creates a leader profile whenever a new Supabase Auth user is added. Create club leader accounts in Supabase Authentication > Users. The `/login` page uses Supabase email/password authentication.
+
+Staff can then use a durable username instead of remembering an email address:
+
+```sql
+update public.profiles
+set username = 'clubsprefect',
+    login_email = 'your-real-email@example.com',
+    full_name = 'Clubs Prefect',
+    role = 'prefect'
+where id = 'YOUR_AUTH_USER_UUID';
+```
+
+The password remains managed by Supabase Auth and is never stored in this project. The login screen accepts either `clubsprefect` or the account email.
 
 ## Logo
 
