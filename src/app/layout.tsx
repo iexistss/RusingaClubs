@@ -9,5 +9,5 @@ const merriweather = Merriweather({ subsets: ["latin"], variable: "--font-merriw
 export const metadata: Metadata = { title: "Rusinga Clubs", description: "Find your people. Make your mark." };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={`${poppins.variable} ${merriweather.variable}`}><SiteHeader />{children}</body></html>;
+  return <html lang="en"><body suppressHydrationWarning className={`${poppins.variable} ${merriweather.variable}`}><SiteHeader />{children}</body></html>;
 }

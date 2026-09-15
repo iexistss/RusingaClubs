@@ -1,10 +1,11 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isValidSupabaseUrl } from "@/lib/supabase-config";
 
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key || !request.nextUrl.pathname.startsWith("/admin")) return NextResponse.next();
+  if (!isValidSupabaseUrl(url) || !key || !request.nextUrl.pathname.startsWith("/admin")) return NextResponse.next();
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, key, {
