@@ -49,6 +49,18 @@ After signing in at `/login`, open `/admin/manage` to add or remove clubs and up
 
 The active school year is `2026/2027`, running September through June. Students can register for up to two clubs per school year. The public `/request-change` page records requests for a leader or Prefect to review; authenticated staff can review them at `/admin/requests`.
 
+## Password recovery
+
+The login screen links to `/forgot-password`, and reset emails return to `/update-password`. In Supabase **Authentication > URL Configuration**, add these URLs:
+
+```text
+https://your-domain.com/forgot-password
+https://your-domain.com/update-password
+https://your-domain.com/**
+```
+
+For local testing also add `http://localhost:3000/**`. If reset emails do not arrive, check Supabase **Authentication > Logs** and configure a custom SMTP provider under the project Auth email settings; the default email service is rate-limited.
+
 ## Deploy to Vercel
 
 1. Push this folder to a GitHub repository and import it into Vercel.
