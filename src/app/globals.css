@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --blue: #064687; --silver: #9bb0c8; --ink: #10273c; --paper: #f7fafc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--font-poppins), Arial, sans-serif; }
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; }
+.serif { font-family: var(--font-merriweather), Georgia, serif; }
+.text-balance { text-wrap: balance; }
+.outline-ring:focus-visible { outline: 3px solid #ffd200; outline-offset: 3px; }
+::selection { color: #fff; background: var(--blue); }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.float { animation: float 5s ease-in-out infinite; }
+@keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.appear { animation: appear .6s ease both; }
