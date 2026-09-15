@@ -16,3 +16,10 @@ button, input, select { font: inherit; }
 .float { animation: float 5s ease-in-out infinite; }
 @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .appear { animation: appear .6s ease both; }
+@media print {
+  body { background: #fff; }
+  body > header, .no-print { display: none !important; }
+  .print-report { min-height: auto !important; padding: 0 !important; background: #fff !important; }
+  .print-report > div { max-width: none !important; }
+  .print-report .shadow-card { box-shadow: none !important; }
+}

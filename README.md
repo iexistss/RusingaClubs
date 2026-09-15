@@ -19,7 +19,15 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Run `supabase/schema.sql` in the Supabase SQL editor. If you already ran the earlier version of the schema, run `supabase/migrations/2026_school_year_and_prefect.sql` as well. Create club leader accounts in Supabase Authentication > Users. The `/login` page uses Supabase email/password authentication.
+Run `supabase/schema.sql` in the Supabase SQL editor. If you already ran the earlier version of the schema, run these migrations as well:
+
+```text
+supabase/migrations/2026_profiles.sql
+supabase/migrations/2026_school_year_and_prefect.sql
+supabase/migrations/2026_club_change_requests.sql
+```
+
+`2026_profiles.sql` creates `public.profiles` and automatically creates a leader profile whenever a new Supabase Auth user is added. Create club leader accounts in Supabase Authentication > Users. The `/login` page uses Supabase email/password authentication.
 
 ## Logo
 
